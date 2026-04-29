@@ -8,6 +8,8 @@
   --accent2: #c4914d;
   --ice: #4a7a8a;
   --ice2: #7fb3c4;
+  --cold: #5a6a8a;
+  --cold2: #8a9aba;
   --border: #d4c4a8;
   --shadow: rgba(44, 36, 22, 0.1);
 }
@@ -95,7 +97,7 @@ body::before {
 
 .mode-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   border-bottom: 1px solid var(--border);
 }
 
@@ -129,6 +131,11 @@ body::before {
   background: linear-gradient(180deg, rgba(74, 122, 138, 0.06) 0%, transparent 100%);
 }
 
+.mode-tab.active[data-mode='cold'] {
+  color: var(--cold);
+  background: linear-gradient(180deg, rgba(90, 106, 138, 0.06) 0%, transparent 100%);
+}
+
 .mode-tab.active::after {
   content: '';
   position: absolute;
@@ -145,6 +152,10 @@ body::before {
 
 .mode-tab.active[data-mode='ice']::after {
   background: var(--ice);
+}
+
+.mode-tab.active[data-mode='cold']::after {
+  background: var(--cold);
 }
 
 .input-section {
@@ -177,6 +188,10 @@ body::before {
 
 .mode-ice .input-row:focus-within {
   border-color: var(--ice2);
+}
+
+.mode-cold .input-row:focus-within {
+  border-color: var(--cold2);
 }
 
 .bean-icon {
@@ -245,6 +260,10 @@ input[type='number']::-webkit-outer-spin-button {
   border-color: var(--ice2);
 }
 
+.mode-cold .preset-chip:hover {
+  border-color: var(--cold2);
+}
+
 .mode-hot .preset-chip.active {
   background: rgba(139, 92, 42, 0.1);
   border-color: var(--accent2);
@@ -255,6 +274,12 @@ input[type='number']::-webkit-outer-spin-button {
   background: rgba(74, 122, 138, 0.1);
   border-color: var(--ice2);
   color: var(--ice);
+}
+
+.mode-cold .preset-chip.active {
+  background: rgba(90, 106, 138, 0.1);
+  border-color: var(--cold2);
+  color: var(--cold);
 }
 
 .strength-section {
@@ -305,6 +330,12 @@ input[type='number']::-webkit-outer-spin-button {
 .mode-ice .strength-tab.active {
   background: var(--ice);
   border-color: var(--ice);
+  color: white;
+}
+
+.mode-cold .strength-tab.active {
+  background: var(--cold);
+  border-color: var(--cold);
   color: white;
 }
 
@@ -385,6 +416,10 @@ input[type='number']::-webkit-outer-spin-button {
   color: var(--ice);
 }
 
+.mode-cold .result-value {
+  color: var(--cold);
+}
+
 .result-unit {
   font-size: 11px;
   color: var(--ink-light);
@@ -412,6 +447,10 @@ input[type='number']::-webkit-outer-spin-button {
 
 .mode-ice .gauge-bar {
   background: linear-gradient(90deg, var(--ice2), var(--ice));
+}
+
+.mode-cold .gauge-bar {
+  background: linear-gradient(90deg, var(--cold2), var(--cold));
 }
 
 .result-item-full {
@@ -464,6 +503,10 @@ input[type='number']::-webkit-outer-spin-button {
 
 .mode-ice .grind-value {
   color: var(--ice);
+}
+
+.mode-cold .grind-value {
+  color: var(--cold);
 }
 
 .empty-hint {

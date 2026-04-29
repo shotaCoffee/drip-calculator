@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 
-type Mode = 'hot' | 'ice'
+type Mode = 'hot' | 'ice' | 'cold'
 type Strength = 'strong' | 'balance' | 'light'
 
 interface HotRecipe {
@@ -20,6 +20,13 @@ interface IceRecipe {
   temp: number
 }
 
+interface ColdRecipe {
+  waterRatio: number
+  brewTime: string
+  brewTimePct: number
+  grind: string
+}
+
 const RECIPES = {
   hot: {
     strong:  { waterRatio: 13, bloom: 40, grind: 'やや細挽き', temp: 91 } satisfies HotRecipe,
@@ -31,12 +38,18 @@ const RECIPES = {
     balance: { waterRatio: 9,  iceRatio: 6, bloom: 30, grind: 'やや細挽き', temp: 95 } satisfies IceRecipe,
     light:   { waterRatio: 11, iceRatio: 6, bloom: 20, grind: '中挽き',     temp: 96 } satisfies IceRecipe,
   },
+  cold: {
+    strong:  { waterRatio: 8,    brewTime: '18〜24時間', brewTimePct: 85, grind: '中粗挽き' } satisfies ColdRecipe,
+    balance: { waterRatio: 12.5, brewTime: '12〜18時間', brewTimePct: 55, grind: '中粗挽き' } satisfies ColdRecipe,
+    light:   { waterRatio: 15,   brewTime: '8〜12時間',  brewTimePct: 25, grind: '中粗挽き' } satisfies ColdRecipe,
+  },
 } as const
 
 const GRIND_PCT: Record<string, number> = {
   '細挽き': 15,
   'やや細挽き': 35,
   '中挽き': 55,
+  '中粗挽き': 65,
   'やや粗挽き': 75,
   '粗挽き': 95,
 }
@@ -159,6 +172,33 @@ function GrindRow({ grind }: GrindRowProps) {
   )
 }
 
+interface BrewTimeRowProps {
+  brewTime: string
+  pct: number
+}
+
+function BrewTimeRow({ brewTime, pct }: BrewTimeRowProps) {
+  return (
+    <div className="result-item result-item-full">
+      <div className="result-left">
+        <span className="result-icon" aria-hidden="true">⏳</span>
+        <div>
+          <span className="result-label">
+            抽出時間の目安
+            <Tooltip text="冷蔵庫で水出し。濃いめは長時間ほどコクが出る。" />
+          </span>
+        </div>
+        <div className="result-value-wrap">
+          <span className="grind-value">{brewTime}</span>
+        </div>
+      </div>
+      <div className="gauge-wrap" role="presentation">
+        <div className="gauge-bar" style={{ width: `${clampPct(pct)}%` }} />
+      </div>
+    </div>
+  )
+}
+
 const STORAGE_KEY = 'drip-guide-prefs'
 
 function readStorage(): Partial<{ mode: Mode; strength: Strength; grams: string }> {
@@ -194,7 +234,7 @@ export default function DripCalculator() {
     const urlG = params.get('g')
 
     if (urlMode || urlStrength || urlG) {
-      if (urlMode === 'hot' || urlMode === 'ice') setMode(urlMode)
+      if (urlMode === 'hot' || urlMode === 'ice' || urlMode === 'cold') setMode(urlMode)
       if (urlStrength === 'strong' || urlStrength === 'balance' || urlStrength === 'light') setStrength(urlStrength)
       if (urlG) setGrams(urlG)
     } else {
@@ -263,7 +303,7 @@ export default function DripCalculator() {
         <div className={`card mode-${mode}`} id="card">
           {/* Mode Tabs */}
           <div className="mode-tabs" role="tablist" aria-label="抽出モード">
-            {(['hot', 'ice'] as const).map((m) => (
+            {(['hot', 'ice', 'cold'] as const).map((m) => (
               <button
                 key={m}
                 id={`tab-${m}`}
@@ -275,9 +315,9 @@ export default function DripCalculator() {
                 onClick={() => setMode(m)}
               >
                 <span className="tab-emoji" aria-hidden="true">
-                  {m === 'hot' ? '☕' : '🧊'}
+                  {m === 'hot' ? '☕' : m === 'ice' ? '🧊' : '🫗'}
                 </span>
-                {m === 'hot' ? 'ホット' : 'アイス'}
+                {m === 'hot' ? 'ホット' : m === 'ice' ? 'アイス' : '水出し'}
               </button>
             ))}
           </div>
@@ -400,6 +440,28 @@ export default function DripCalculator() {
                   <GrindRow grind={r.grind} />
                 </div>
               </>
+            ) : mode === 'cold' ? (
+              (() => {
+                const coldR = r as ColdRecipe
+                const water = Math.round(g * coldR.waterRatio)
+                return (
+                  <>
+                    <ResultRow
+                      icon="💧"
+                      label="水の量"
+                      value={water}
+                      unit="ml"
+                      pct={(water / MAX_WATER) * 100}
+                      hero
+                      ratio={`1 : ${coldR.waterRatio}`}
+                    />
+                    <div className="result-grid">
+                      <BrewTimeRow brewTime={coldR.brewTime} pct={coldR.brewTimePct} />
+                      <GrindRow grind={coldR.grind} />
+                    </div>
+                  </>
+                )
+              })()
             ) : (
               <>
                 {(() => {
