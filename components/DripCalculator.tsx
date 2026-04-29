@@ -259,6 +259,7 @@ export default function DripCalculator() {
       </header>
 
       <main>
+        <h2 className="sr-only">ハンドドリップの抽出条件を計算</h2>
         <div className={`card mode-${mode}`} id="card">
           {/* Mode Tabs */}
           <div className="mode-tabs" role="tablist" aria-label="抽出モード">
@@ -365,6 +366,7 @@ export default function DripCalculator() {
             className={`results${!hasValue ? ' empty' : ''}`}
             aria-live="polite"
           >
+            <h2 className="sr-only">計算結果</h2>
             {!hasValue ? (
               <p className="empty-hint">豆のグラム数を入力してください</p>
             ) : mode === 'hot' ? (
