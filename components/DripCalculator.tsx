@@ -78,6 +78,22 @@ function useAnimatedValue(target: number) {
   return display
 }
 
+function Tooltip({ text }: { text: string }) {
+  return (
+    <span className="tooltip-wrap">
+      <button
+        type="button"
+        className="tooltip-trigger"
+        aria-label={`ヘルプ: ${text}`}
+        tabIndex={0}
+      >
+        <span aria-hidden="true">?</span>
+      </button>
+      <span className="tooltip-body" role="tooltip">{text}</span>
+    </span>
+  )
+}
+
 interface ResultRowProps {
   icon: string
   label: string
@@ -87,16 +103,20 @@ interface ResultRowProps {
   sub?: string
   hero?: boolean
   ratio?: string
+  tooltip?: string
 }
 
-function ResultRow({ icon, label, value, unit, pct, sub, hero, ratio }: ResultRowProps) {
+function ResultRow({ icon, label, value, unit, pct, sub, hero, ratio, tooltip }: ResultRowProps) {
   const display = useAnimatedValue(value)
   return (
     <div className={`result-item result-item-full${hero ? ' result-hero' : ''}`}>
       <div className="result-left">
         <span className="result-icon" aria-hidden="true">{icon}</span>
         <div>
-          <span className="result-label">{label}</span>
+          <span className="result-label">
+            {label}
+            {tooltip && <Tooltip text={tooltip} />}
+          </span>
           {sub && <span className="result-sub">{sub}</span>}
         </div>
         <div className="result-value-wrap">
@@ -123,7 +143,10 @@ function GrindRow({ grind }: GrindRowProps) {
       <div className="result-left">
         <span className="result-icon" aria-hidden="true">⚙️</span>
         <div>
-          <span className="result-label">挽き目の目安</span>
+          <span className="result-label">
+            挽き目の目安
+            <Tooltip text="豆の粒の細かさ。中挽きはグラニュー糖くらい。" />
+          </span>
         </div>
         <div className="result-value-wrap">
           <span className="grind-value">{grind}</span>
@@ -308,6 +331,7 @@ export default function DripCalculator() {
                     unit="秒"
                     pct={(r.bloom / 45) * 100}
                     sub={`蒸らしお湯 約${Math.round(g * 2.5)}ml`}
+                    tooltip="最初に少量のお湯を注いで30秒待つ工程。コーヒーが膨らむ。"
                   />
                   <GrindRow grind={r.grind} />
                 </div>
@@ -351,6 +375,7 @@ export default function DripCalculator() {
                           value={iceR.bloom}
                           unit="秒"
                           pct={(iceR.bloom / 45) * 100}
+                          tooltip="最初に少量のお湯を注いで30秒待つ工程。コーヒーが膨らむ。"
                         />
                         <GrindRow grind={iceR.grind} />
                       </div>
