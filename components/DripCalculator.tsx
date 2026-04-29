@@ -410,36 +410,41 @@ export default function DripCalculator() {
             {!hasValue ? (
               <p className="empty-hint">豆のグラム数を入力してください</p>
             ) : mode === 'hot' ? (
+              (() => {
+                const hotR = r as HotRecipe
+                return (
               <>
                 <ResultRow
                   icon="💧"
                   label="お湯の量"
-                  value={Math.round(g * r.waterRatio)}
+                  value={Math.round(g * hotR.waterRatio)}
                   unit="ml"
-                  pct={(Math.round(g * r.waterRatio) / MAX_WATER) * 100}
+                  pct={(Math.round(g * hotR.waterRatio) / MAX_WATER) * 100}
                   hero
-                  ratio={`1 : ${r.waterRatio}`}
+                  ratio={`1 : ${hotR.waterRatio}`}
                 />
                 <div className="result-grid">
                   <ResultRow
                     icon="🌡️"
                     label="お湯の温度"
-                    value={r.temp}
+                    value={hotR.temp}
                     unit="°C"
-                    pct={((r.temp - 85) / 15) * 100}
+                    pct={((hotR.temp - 85) / 15) * 100}
                   />
                   <ResultRow
                     icon="⏱️"
                     label="蒸らし時間"
-                    value={r.bloom}
+                    value={hotR.bloom}
                     unit="秒"
-                    pct={(r.bloom / 45) * 100}
+                    pct={(hotR.bloom / 45) * 100}
                     sub={`蒸らしお湯 約${Math.round(g * 2.5)}ml`}
                     tooltip="最初に少量のお湯を注いで30秒待つ工程。コーヒーが膨らむ。"
                   />
-                  <GrindRow grind={r.grind} />
+                  <GrindRow grind={hotR.grind} />
                 </div>
               </>
+                )
+              })()
             ) : mode === 'cold' ? (
               (() => {
                 const coldR = r as ColdRecipe
