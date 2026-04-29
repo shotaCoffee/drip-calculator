@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 type Mode = 'hot' | 'ice'
 type Strength = 'strong' | 'balance' | 'light'
@@ -44,9 +44,38 @@ const GRIND_PCT: Record<string, number> = {
 const MAX_WATER = 100 * 17
 const MAX_ICE   = 100 * 10 * 1.5
 const STRENGTH_KEYS = ['strong', 'balance', 'light'] as const
+const PRESET_GRAMS = [10, 15, 20, 25, 30] as const
 
 function clampPct(n: number) {
   return Math.min(100, Math.max(2, n))
+}
+
+function useAnimatedValue(target: number) {
+  const [display, setDisplay] = useState(target)
+  const prevRef = useRef(target)
+  const rafRef = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    const start = prevRef.current
+    const end = target
+    if (start === end) return
+    const duration = 200
+    const startTime = performance.now()
+    const animate = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1)
+      setDisplay(Math.round(start + (end - start) * t))
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(animate)
+      } else {
+        prevRef.current = end
+      }
+    }
+    if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(animate)
+    return () => { if (rafRef.current !== undefined) cancelAnimationFrame(rafRef.current) }
+  }, [target])
+
+  return display
 }
 
 interface ResultRowProps {
@@ -59,6 +88,7 @@ interface ResultRowProps {
 }
 
 function ResultRow({ icon, label, value, unit, pct, sub }: ResultRowProps) {
+  const display = useAnimatedValue(value)
   return (
     <div className="result-item result-item-full">
       <div className="result-left">
@@ -68,7 +98,7 @@ function ResultRow({ icon, label, value, unit, pct, sub }: ResultRowProps) {
           {sub && <span className="result-sub">{sub}</span>}
         </div>
         <div className="result-value-wrap">
-          <span className="result-value">{value}</span>
+          <span className="result-value">{display}</span>
           <span className="result-unit"> {unit}</span>
         </div>
       </div>
@@ -191,6 +221,19 @@ export default function DripCalculator() {
                 1〜100gで入力してください
               </p>
             )}
+            <div className="preset-chips" role="group" aria-label="グラム数プリセット">
+              {PRESET_GRAMS.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`preset-chip${grams === String(v) ? ' active' : ''}`}
+                  onClick={() => setGrams(String(v))}
+                  aria-label={`${v}グラムに設定`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
           </section>
 
           {/* Strength */}

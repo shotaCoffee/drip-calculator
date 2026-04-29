@@ -203,6 +203,48 @@ input[type='number']::-webkit-outer-spin-button {
   letter-spacing: 0.05em;
 }
 
+.preset-chips {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.preset-chip {
+  padding: 6px 4px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: var(--font-num), sans-serif;
+  font-size: 13px;
+  color: var(--ink-light);
+  transition: all 0.15s ease;
+  letter-spacing: 0.03em;
+}
+
+.preset-chip:hover {
+  border-color: var(--accent2);
+  color: var(--ink);
+}
+
+.mode-ice .preset-chip:hover {
+  border-color: var(--ice2);
+}
+
+.mode-hot .preset-chip.active {
+  background: rgba(139, 92, 42, 0.1);
+  border-color: var(--accent2);
+  color: var(--accent);
+}
+
+.mode-ice .preset-chip.active {
+  background: rgba(74, 122, 138, 0.1);
+  border-color: var(--ice2);
+  color: var(--ice);
+}
+
 .strength-section {
   padding: 0 24px 20px;
 }
