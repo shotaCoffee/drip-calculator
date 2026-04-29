@@ -549,12 +549,42 @@ input[type='number']::-webkit-outer-spin-button {
 }
 
 .footer {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   padding: 24px;
   font-size: 10px;
   color: var(--ink-light);
   letter-spacing: 0.15em;
   opacity: 0.6;
+}
+
+.share-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+  color: var(--ink-light);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.15s;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.share-btn:hover,
+.share-btn:focus {
+  border-color: var(--accent2);
+  color: var(--ink);
+  outline: none;
+}
+
+.share-btn.copied {
+  color: var(--accent);
+  border-color: var(--accent2);
 }
 
 @keyframes fadeIn {

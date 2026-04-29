@@ -183,6 +183,7 @@ export default function DripCalculator() {
   const [strength, setStrength] = useState<Strength>('balance')
   const [grams, setGrams] = useState<string>('')
   const [hydrated, setHydrated] = useState(false)
+  const [copied, setCopied] = useState(false)
   const strengthRef = useRef<HTMLDivElement>(null)
 
   // Restore state from URL params, falling back to localStorage
@@ -220,6 +221,16 @@ export default function DripCalculator() {
   const hasValue = !isNaN(g) && g > 0
   const outOfRange = grams !== '' && !isNaN(parseFloat(grams)) && (parseFloat(grams) < 1 || parseFloat(grams) > 100)
   const r = RECIPES[mode][strength]
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      // clipboard unavailable
+    }
+  }, [])
 
   const handleStrengthKeyDown = useCallback((e: React.KeyboardEvent) => {
     const items = STRENGTH_KEYS
@@ -439,7 +450,17 @@ export default function DripCalculator() {
         </div>
       </main>
 
-      <footer className="footer">HAND DRIP GUIDE · ベストプラクティス計算機</footer>
+      <footer className="footer">
+        HAND DRIP GUIDE · ベストプラクティス計算機
+        <button
+          type="button"
+          className={`share-btn${copied ? ' copied' : ''}`}
+          onClick={handleCopy}
+          aria-label="このレシピのURLをコピー"
+        >
+          {copied ? 'Copied' : 'Copy URL'}
+        </button>
+      </footer>
     </div>
   )
 }
