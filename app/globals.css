@@ -442,40 +442,11 @@ input[type='number']::-webkit-outer-spin-button {
   margin-top: 1px;
 }
 
-/* Sub-items grid */
+/* Sub-items list */
 .result-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-}
-
-.result-grid-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.result-grid .result-item-full {
-  gap: 4px;
-}
-
-.result-grid .result-icon {
-  font-size: 14px;
-}
-
-.result-grid .result-label {
-  font-size: 10px;
-}
-
-.result-grid .result-value {
-  font-size: 20px;
-}
-
-.result-grid .result-sub {
-  font-size: 10px;
-}
-
-.result-grid .grind-value {
-  font-size: 13px;
-  margin-top: 1px;
 }
 
 .grind-value {

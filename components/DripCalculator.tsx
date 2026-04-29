@@ -27,9 +27,9 @@ const RECIPES = {
     light:   { waterRatio: 17, bloom: 25, grind: 'やや粗挽き', temp: 93 } satisfies HotRecipe,
   },
   ice: {
-    strong:  { waterRatio: 8,  iceRatio: 0.8, bloom: 30, grind: '細挽き',     temp: 95 } satisfies IceRecipe,
-    balance: { waterRatio: 9,  iceRatio: 1.0, bloom: 25, grind: 'やや細挽き', temp: 95 } satisfies IceRecipe,
-    light:   { waterRatio: 10, iceRatio: 1.2, bloom: 20, grind: '中挽き',     temp: 96 } satisfies IceRecipe,
+    strong:  { waterRatio: 6,  iceRatio: 6, bloom: 40, grind: '細挽き',     temp: 95 } satisfies IceRecipe,
+    balance: { waterRatio: 9,  iceRatio: 6, bloom: 30, grind: 'やや細挽き', temp: 95 } satisfies IceRecipe,
+    light:   { waterRatio: 11, iceRatio: 6, bloom: 20, grind: '中挽き',     temp: 96 } satisfies IceRecipe,
   },
 } as const
 
@@ -405,7 +405,7 @@ export default function DripCalculator() {
                 {(() => {
                   const iceR = r as IceRecipe
                   const water = Math.round(g * iceR.waterRatio)
-                  const ice   = Math.round(water * iceR.iceRatio)
+                  const ice   = Math.round(g * iceR.iceRatio)
                   return (
                     <>
                       <ResultRow
@@ -417,14 +417,14 @@ export default function DripCalculator() {
                         hero
                         ratio={`1 : ${iceR.waterRatio}`}
                       />
-                      <div className="result-grid result-grid-2">
+                      <div className="result-grid">
                         <ResultRow
                           icon="🧊"
                           label="氷の量"
                           value={ice}
                           unit="g"
                           pct={(ice / MAX_ICE) * 100}
-                          sub={`合計液量 約${water + ice}ml`}
+                          sub={`合計液量 約${Math.round(water - g * 2) + ice}ml`}
                         />
                         <ResultRow
                           icon="🌡️"
