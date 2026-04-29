@@ -159,11 +159,62 @@ function GrindRow({ grind }: GrindRowProps) {
   )
 }
 
+const STORAGE_KEY = 'drip-guide-prefs'
+
+function readStorage(): Partial<{ mode: Mode; strength: Strength; grams: string }> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeStorage(mode: Mode, strength: Strength, grams: string) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ mode, strength, grams }))
+  } catch {
+    // ignore quota errors
+  }
+}
+
 export default function DripCalculator() {
   const [mode, setMode] = useState<Mode>('hot')
   const [strength, setStrength] = useState<Strength>('balance')
   const [grams, setGrams] = useState<string>('')
+  const [hydrated, setHydrated] = useState(false)
   const strengthRef = useRef<HTMLDivElement>(null)
+
+  // Restore state from URL params, falling back to localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const urlMode = params.get('mode')
+    const urlStrength = params.get('strength')
+    const urlG = params.get('g')
+
+    if (urlMode || urlStrength || urlG) {
+      if (urlMode === 'hot' || urlMode === 'ice') setMode(urlMode)
+      if (urlStrength === 'strong' || urlStrength === 'balance' || urlStrength === 'light') setStrength(urlStrength)
+      if (urlG) setGrams(urlG)
+    } else {
+      const saved = readStorage()
+      if (saved.mode) setMode(saved.mode)
+      if (saved.strength) setStrength(saved.strength)
+      if (saved.grams) setGrams(saved.grams)
+    }
+    setHydrated(true)
+  }, [])
+
+  // Sync URL and localStorage whenever state changes (after hydration)
+  useEffect(() => {
+    if (!hydrated) return
+    const params = new URLSearchParams()
+    params.set('mode', mode)
+    params.set('strength', strength)
+    if (grams) params.set('g', grams)
+    window.history.replaceState(null, '', `?${params.toString()}`)
+    writeStorage(mode, strength, grams)
+  }, [mode, strength, grams, hydrated])
 
   const g = parseFloat(grams)
   const hasValue = !isNaN(g) && g > 0
