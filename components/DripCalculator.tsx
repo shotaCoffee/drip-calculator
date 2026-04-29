@@ -85,12 +85,14 @@ interface ResultRowProps {
   unit: string
   pct: number
   sub?: string
+  hero?: boolean
+  ratio?: string
 }
 
-function ResultRow({ icon, label, value, unit, pct, sub }: ResultRowProps) {
+function ResultRow({ icon, label, value, unit, pct, sub, hero, ratio }: ResultRowProps) {
   const display = useAnimatedValue(value)
   return (
-    <div className="result-item result-item-full">
+    <div className={`result-item result-item-full${hero ? ' result-hero' : ''}`}>
       <div className="result-left">
         <span className="result-icon" aria-hidden="true">{icon}</span>
         <div>
@@ -100,6 +102,7 @@ function ResultRow({ icon, label, value, unit, pct, sub }: ResultRowProps) {
         <div className="result-value-wrap">
           <span className="result-value">{display}</span>
           <span className="result-unit"> {unit}</span>
+          {ratio && <span className="result-ratio">{ratio}</span>}
         </div>
       </div>
       <div className="gauge-wrap" role="presentation">
@@ -287,23 +290,27 @@ export default function DripCalculator() {
                   value={Math.round(g * r.waterRatio)}
                   unit="ml"
                   pct={(Math.round(g * r.waterRatio) / MAX_WATER) * 100}
+                  hero
+                  ratio={`1 : ${r.waterRatio}`}
                 />
-                <ResultRow
-                  icon="🌡️"
-                  label="お湯の温度"
-                  value={r.temp}
-                  unit="°C"
-                  pct={((r.temp - 85) / 15) * 100}
-                />
-                <ResultRow
-                  icon="⏱️"
-                  label="蒸らし時間"
-                  value={r.bloom}
-                  unit="秒"
-                  pct={(r.bloom / 45) * 100}
-                  sub={`蒸らしお湯 約${Math.round(g * 2.5)}ml`}
-                />
-                <GrindRow grind={r.grind} />
+                <div className="result-grid">
+                  <ResultRow
+                    icon="🌡️"
+                    label="お湯の温度"
+                    value={r.temp}
+                    unit="°C"
+                    pct={((r.temp - 85) / 15) * 100}
+                  />
+                  <ResultRow
+                    icon="⏱️"
+                    label="蒸らし時間"
+                    value={r.bloom}
+                    unit="秒"
+                    pct={(r.bloom / 45) * 100}
+                    sub={`蒸らしお湯 約${Math.round(g * 2.5)}ml`}
+                  />
+                  <GrindRow grind={r.grind} />
+                </div>
               </>
             ) : (
               <>
@@ -319,30 +326,34 @@ export default function DripCalculator() {
                         value={water}
                         unit="ml"
                         pct={(water / MAX_WATER) * 100}
+                        hero
+                        ratio={`1 : ${iceR.waterRatio}`}
                       />
-                      <ResultRow
-                        icon="🧊"
-                        label="氷の量"
-                        value={ice}
-                        unit="g"
-                        pct={(ice / MAX_ICE) * 100}
-                        sub={`合計液量 約${water + ice}ml`}
-                      />
-                      <ResultRow
-                        icon="🌡️"
-                        label="お湯の温度"
-                        value={iceR.temp}
-                        unit="°C"
-                        pct={((iceR.temp - 85) / 15) * 100}
-                      />
-                      <ResultRow
-                        icon="⏱️"
-                        label="蒸らし時間"
-                        value={iceR.bloom}
-                        unit="秒"
-                        pct={(iceR.bloom / 45) * 100}
-                      />
-                      <GrindRow grind={iceR.grind} />
+                      <div className="result-grid result-grid-2">
+                        <ResultRow
+                          icon="🧊"
+                          label="氷の量"
+                          value={ice}
+                          unit="g"
+                          pct={(ice / MAX_ICE) * 100}
+                          sub={`合計液量 約${water + ice}ml`}
+                        />
+                        <ResultRow
+                          icon="🌡️"
+                          label="お湯の温度"
+                          value={iceR.temp}
+                          unit="°C"
+                          pct={((iceR.temp - 85) / 15) * 100}
+                        />
+                        <ResultRow
+                          icon="⏱️"
+                          label="蒸らし時間"
+                          value={iceR.bloom}
+                          unit="秒"
+                          pct={(iceR.bloom / 45) * 100}
+                        />
+                        <GrindRow grind={iceR.grind} />
+                      </div>
                     </>
                   )
                 })()}
