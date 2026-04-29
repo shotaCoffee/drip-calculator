@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://drip-guide.vercel.app/sitemap.xml',
+    sitemap: 'https://drip.shota.coffee/sitemap.xml',
   }
 }

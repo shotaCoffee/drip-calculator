@@ -17,30 +17,34 @@ const notoSansJP = Noto_Sans_JP({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://drip-guide.vercel.app'),
-  title: 'Drip Guide | ハンドドリップ計算機',
+  metadataBase: new URL('https://drip.shota.coffee'),
+  title: 'ハンドドリップ計算機｜豆の量からお湯・温度・蒸らしを自動算出 | Drip Guide',
   description:
-    'コーヒー豆のグラム数を入れるだけ。お湯の量・温度・蒸らし時間・挽き目が即座にわかる無料ハンドドリップ計算機。ホット・アイスコーヒーに対応。',
+    'コーヒー豆のグラム数を入れるだけ。お湯の量・温度・蒸らし時間・挽き目が即座にわかる無料ハンドドリップ計算機。ホット・アイス対応、強さ3段階、登録不要。',
   keywords: ['ハンドドリップ', 'コーヒー計算機', 'ドリップ計算', 'アイスコーヒー', 'お湯の量', '挽き目'],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'Drip Guide | ハンドドリップ計算機',
+    title: 'ハンドドリップ計算機｜豆の量からお湯・温度・蒸らしを自動算出 | Drip Guide',
     description:
-      'コーヒー豆のグラム数を入れるだけ。お湯の量・温度・蒸らし時間・挽き目が即座にわかる無料ハンドドリップ計算機。',
+      'コーヒー豆のグラム数を入れるだけ。お湯の量・温度・蒸らし時間・挽き目が即座にわかる無料ハンドドリップ計算機。ホット・アイス対応、強さ3段階、登録不要。',
     type: 'website',
+    url: 'https://drip.shota.coffee/',
     locale: 'ja_JP',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Drip Guide - Hand Drip Calculator',
+        alt: 'Drip Guide',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Drip Guide | ハンドドリップ計算機',
-    description: 'コーヒー豆のグラム数を入れるだけでドリップレシピが即計算。',
+    title: 'ハンドドリップ計算機｜豆の量からお湯・温度・蒸らしを自動算出 | Drip Guide',
+    description: 'コーヒー豆のグラム数を入れるだけでドリップレシピが即計算。ホット・アイス対応、無料・登録不要。',
     images: ['/og-image.png'],
   },
   manifest: '/manifest.webmanifest',
