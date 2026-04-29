@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 type Mode = 'hot' | 'ice'
 type Strength = 'strong' | 'balance' | 'light'
@@ -43,6 +43,7 @@ const GRIND_PCT: Record<string, number> = {
 
 const MAX_WATER = 100 * 17
 const MAX_ICE   = 100 * 10 * 1.5
+const STRENGTH_KEYS = ['strong', 'balance', 'light'] as const
 
 function clampPct(n: number) {
   return Math.min(100, Math.max(2, n))
@@ -106,10 +107,30 @@ export default function DripCalculator() {
   const [mode, setMode] = useState<Mode>('hot')
   const [strength, setStrength] = useState<Strength>('balance')
   const [grams, setGrams] = useState<string>('')
+  const strengthRef = useRef<HTMLDivElement>(null)
 
   const g = parseFloat(grams)
   const hasValue = !isNaN(g) && g > 0
+  const outOfRange = grams !== '' && !isNaN(parseFloat(grams)) && (parseFloat(grams) < 1 || parseFloat(grams) > 100)
   const r = RECIPES[mode][strength]
+
+  const handleStrengthKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const items = STRENGTH_KEYS
+    const idx = items.indexOf(strength)
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault()
+      const next = items[(idx + 1) % items.length]
+      setStrength(next)
+      const btns = strengthRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      btns?.[(idx + 1) % items.length]?.focus()
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const prev = items[(idx - 1 + items.length) % items.length]
+      setStrength(prev)
+      const btns = strengthRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      btns?.[(idx - 1 + items.length) % items.length]?.focus()
+    }
+  }, [strength])
 
   return (
     <div className="app">
@@ -126,8 +147,10 @@ export default function DripCalculator() {
             {(['hot', 'ice'] as const).map((m) => (
               <button
                 key={m}
+                id={`tab-${m}`}
                 role="tab"
                 aria-selected={mode === m}
+                aria-controls="tabpanel-results"
                 data-mode={m}
                 className={`mode-tab${mode === m ? ' active' : ''}`}
                 onClick={() => setMode(m)}
@@ -150,21 +173,36 @@ export default function DripCalculator() {
               <input
                 id="beanInput"
                 type="number"
+                inputMode="numeric"
+                enterKeyHint="done"
+                autoComplete="off"
                 placeholder="15"
                 min={1}
                 max={100}
                 value={grams}
                 onChange={(e) => setGrams(e.target.value)}
                 aria-label="コーヒー豆のグラム数"
+                aria-describedby={outOfRange ? 'input-error' : undefined}
               />
               <span className="input-unit">グラム</span>
             </div>
+            {outOfRange && (
+              <p id="input-error" className="input-error" role="alert">
+                1〜100gで入力してください
+              </p>
+            )}
           </section>
 
           {/* Strength */}
           <section className="strength-section">
             <span className="strength-label" id="strength-label">強さ</span>
-            <div className="strength-tabs" role="group" aria-labelledby="strength-label">
+            <div
+              className="strength-tabs"
+              role="radiogroup"
+              aria-labelledby="strength-label"
+              ref={strengthRef}
+              onKeyDown={handleStrengthKeyDown}
+            >
               {([
                 { key: 'strong',  emoji: '🔥', label: '濃いめ' },
                 { key: 'balance', emoji: '✨', label: 'バランス' },
@@ -175,7 +213,9 @@ export default function DripCalculator() {
                   data-strength={key}
                   className={`strength-tab${strength === key ? ' active' : ''}`}
                   onClick={() => setStrength(key)}
-                  aria-pressed={strength === key}
+                  role="radio"
+                  aria-checked={strength === key}
+                  tabIndex={strength === key ? 0 : -1}
                 >
                   <span className="strength-emoji" aria-hidden="true">{emoji}</span>
                   {label}
@@ -188,8 +228,10 @@ export default function DripCalculator() {
 
           {/* Results */}
           <section
+            id="tabpanel-results"
+            role="tabpanel"
+            aria-labelledby={`tab-${mode}`}
             className={`results${!hasValue ? ' empty' : ''}`}
-            aria-label="計算結果"
             aria-live="polite"
           >
             {!hasValue ? (
