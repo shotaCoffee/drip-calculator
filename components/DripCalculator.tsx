@@ -58,6 +58,7 @@ const MAX_WATER = 100 * 17
 const MAX_ICE   = 100 * 10 * 1.5
 const STRENGTH_KEYS = ['strong', 'balance', 'light'] as const
 const PRESET_GRAMS = [10, 15, 20, 25, 30] as const
+const PRESET_YIELD = [250, 500, 750, 1000] as const
 
 function clampPct(n: number) {
   return Math.min(100, Math.max(2, n))
@@ -222,6 +223,8 @@ export default function DripCalculator() {
   const [mode, setMode] = useState<Mode>('hot')
   const [strength, setStrength] = useState<Strength>('balance')
   const [grams, setGrams] = useState<string>('')
+  const [coldInputMode, setColdInputMode] = useState<'bean' | 'yield'>('bean')
+  const [yieldMl, setYieldMl] = useState<string>('')
   const [hydrated, setHydrated] = useState(false)
   const [copied, setCopied] = useState(false)
   const strengthRef = useRef<HTMLDivElement>(null)
@@ -246,6 +249,13 @@ export default function DripCalculator() {
     setHydrated(true)
   }, [])
 
+  useEffect(() => {
+    if (mode !== 'cold') {
+      setColdInputMode('bean')
+      setYieldMl('')
+    }
+  }, [mode])
+
   // Sync URL and localStorage whenever state changes (after hydration)
   useEffect(() => {
     if (!hydrated) return
@@ -260,6 +270,10 @@ export default function DripCalculator() {
   const g = parseFloat(grams)
   const hasValue = !isNaN(g) && g > 0
   const outOfRange = grams !== '' && !isNaN(parseFloat(grams)) && (parseFloat(grams) < 1 || parseFloat(grams) > 100)
+  const yieldValue = parseFloat(yieldMl)
+  const hasYieldValue = !isNaN(yieldValue) && yieldValue > 0
+  const yieldOutOfRange = yieldMl !== '' && !isNaN(yieldValue) && (yieldValue < 50 || yieldValue > 2000)
+  const isInputEmpty = mode === 'cold' && coldInputMode === 'yield' ? !hasYieldValue : !hasValue
   const r = RECIPES[mode][strength]
 
   const handleCopy = useCallback(async () => {
@@ -322,7 +336,28 @@ export default function DripCalculator() {
             ))}
           </div>
 
+          {/* Cold brew input mode toggle */}
+          {mode === 'cold' && (
+            <div className="cold-input-toggle" role="group" aria-label="入力モード">
+              <button
+                className={`cold-toggle-btn${coldInputMode === 'bean' ? ' active' : ''}`}
+                onClick={() => setColdInputMode('bean')}
+                aria-pressed={coldInputMode === 'bean'}
+              >
+                🫘 豆から計算
+              </button>
+              <button
+                className={`cold-toggle-btn${coldInputMode === 'yield' ? ' active' : ''}`}
+                onClick={() => setColdInputMode('yield')}
+                aria-pressed={coldInputMode === 'yield'}
+              >
+                🫗 出来高から逆算
+              </button>
+            </div>
+          )}
+
           {/* Bean input */}
+          {!(mode === 'cold' && coldInputMode === 'yield') && (
           <section className="input-section">
             <label className="input-label" htmlFor="beanInput">
               豆の量
@@ -364,6 +399,52 @@ export default function DripCalculator() {
               ))}
             </div>
           </section>
+          )}
+
+          {/* Yield input (cold brew reverse calculation) */}
+          {mode === 'cold' && coldInputMode === 'yield' && (
+          <section className="input-section">
+            <label className="input-label" htmlFor="yieldInput">
+              目標の出来高
+            </label>
+            <div className="input-row">
+              <span className="bean-icon" aria-hidden="true">🫗</span>
+              <input
+                id="yieldInput"
+                type="number"
+                inputMode="numeric"
+                enterKeyHint="done"
+                autoComplete="off"
+                placeholder="500"
+                min={50}
+                max={2000}
+                value={yieldMl}
+                onChange={(e) => setYieldMl(e.target.value)}
+                aria-label="目標の出来高 (ml)"
+                aria-describedby={yieldOutOfRange ? 'yield-error' : undefined}
+              />
+              <span className="input-unit">ml</span>
+            </div>
+            {yieldOutOfRange && (
+              <p id="yield-error" className="input-error" role="alert">
+                50〜2000mlで入力してください
+              </p>
+            )}
+            <div className="preset-chips preset-chips-4col" role="group" aria-label="出来高プリセット">
+              {PRESET_YIELD.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`preset-chip${yieldMl === String(v) ? ' active' : ''}`}
+                  onClick={() => setYieldMl(String(v))}
+                  aria-label={`${v}mlに設定`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </section>
+          )}
 
           {/* Strength */}
           <section className="strength-section">
@@ -403,12 +484,16 @@ export default function DripCalculator() {
             id="tabpanel-results"
             role="tabpanel"
             aria-labelledby={`tab-${mode}`}
-            className={`results${!hasValue ? ' empty' : ''}`}
+            className={`results${isInputEmpty ? ' empty' : ''}`}
             aria-live="polite"
           >
             <h2 className="sr-only">計算結果</h2>
-            {!hasValue ? (
-              <p className="empty-hint">豆のグラム数を入力してください</p>
+            {isInputEmpty ? (
+              <p className="empty-hint">
+                {mode === 'cold' && coldInputMode === 'yield'
+                  ? '目標の出来高 (ml) を入力してください'
+                  : '豆のグラム数を入力してください'}
+              </p>
             ) : mode === 'hot' ? (
               (() => {
                 const hotR = r as HotRecipe
@@ -448,6 +533,34 @@ export default function DripCalculator() {
             ) : mode === 'cold' ? (
               (() => {
                 const coldR = r as ColdRecipe
+                if (coldInputMode === 'yield') {
+                  const beansNeeded = Math.round(yieldValue / coldR.waterRatio)
+                  const waterNeeded = Math.round(beansNeeded * coldR.waterRatio)
+                  return (
+                    <>
+                      <ResultRow
+                        icon="🫘"
+                        label="必要な豆の量"
+                        value={beansNeeded}
+                        unit="g"
+                        pct={(beansNeeded / 100) * 100}
+                        hero
+                        ratio={`1 : ${coldR.waterRatio}`}
+                      />
+                      <div className="result-grid">
+                        <ResultRow
+                          icon="💧"
+                          label="水の量"
+                          value={waterNeeded}
+                          unit="ml"
+                          pct={(waterNeeded / MAX_WATER) * 100}
+                        />
+                        <BrewTimeRow brewTime={coldR.brewTime} pct={coldR.brewTimePct} />
+                        <GrindRow grind={coldR.grind} />
+                      </div>
+                    </>
+                  )
+                }
                 const water = Math.round(g * coldR.waterRatio)
                 return (
                   <>

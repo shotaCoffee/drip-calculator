@@ -613,6 +613,42 @@ input[type='number']::-webkit-outer-spin-button {
   border-color: var(--accent2);
 }
 
+.cold-input-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 16px 24px 0;
+}
+
+.cold-toggle-btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  color: var(--ink-light);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.cold-toggle-btn.active {
+  background: var(--cold);
+  border-color: var(--cold);
+  color: white;
+}
+
+.cold-toggle-btn:hover:not(.active) {
+  border-color: var(--cold2);
+  color: var(--ink);
+}
+
+.preset-chips-4col {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
